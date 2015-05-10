@@ -4,7 +4,7 @@ defmodule Docker.Client do
   defp base_url do
     host = Application.get_env(:docker, :host) || System.get_env("DOCKER_HOST") |> String.replace("tcp://", "http://")
     version = Application.get_env(:docker, :version)
-    "#{host}/#{version}"
+    "#{host}/#{version}" |> String.rstrip(?/)
   end
 
   @default_headers %{"Content-Type" => "application/json"}
