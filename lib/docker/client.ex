@@ -2,7 +2,7 @@ defmodule Docker.Client do
   require Logger
 
   defp base_url do
-    host = Application.get_env(:docker, :host)
+    host = Application.get_env(:docker, :host) || System.get_env("DOCKER_HOST") |> String.replace("tcp://", "http://")
     version = Application.get_env(:docker, :version)
     "#{host}/#{version}"
   end
