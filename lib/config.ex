@@ -20,7 +20,10 @@ defmodule Docker.Config do
   def create_container(conf = %Docker.Config{generic_hostname: false}) do
     {:ok, os_hostname} = :inet.gethostname
     hostname = conf.hostname || "#{conf.name}-#{os_hostname}"
-    Map.put(conf, :hostname, hostname)
+    conf
+        |> Map.put(:hostname, hostname)
+        |> Map.delete(:generic_hostname)
+        |> create_container
   end
   def create_container(conf = %Docker.Config{}) do
     %{"Hostname" => conf.hostname,
