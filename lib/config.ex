@@ -43,6 +43,26 @@ defmodule Docker.Config do
     }
   end
 
+  @doc """
+  Given a %Docker.Config{} struct, formats and returns a dictionary of the appropriate
+  options for starting a container.
+  """
+  def start_container(conf = %Docker.Config{ports: %{}}) do
+    port_map = conf.ports
+        |> Dict.values
+        |> Enum.map(&port_to_tuple/1)
+        |> Enum.map(&({elem(&1, 0), [%{"HostPort" => elem(&1, 1)}]}))
+        |> Enum.into(%{})
+
+    %{"Binds" => format_volumes(conf.volumes),
+      "PortBindings" => port_map,
+      "NetworkMode" => conf.net,
+    }
+  end
+  def start_container(conf = %Docker.Config{}) do
+    %{"Binds" => format_volumes(conf.volumes)}
+  end
+
   def format_environment(nil), do: []
   def format_environment(env = %{}) do
     Enum.map(env, &(elem(&1, 0) <> "=" <> elem(&1, 1)))
@@ -55,6 +75,12 @@ defmodule Docker.Config do
         |> Enum.map(&port_to_tuple/1)
         |> map_empty_dict(0)
   end
+
+  def format_volumes(nil), do: nil
+  def format_volumes(volumes = %{}) do
+    volumes |> Enum.map(&(to_string(elem(&1, 0)) <> ":" <> elem(&1, 1)))
+  end
+
 
   @doc """
   Takes a port string, either a single port or : deliminated pair,
