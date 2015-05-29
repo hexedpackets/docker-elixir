@@ -2,9 +2,11 @@ defmodule Docker.Client do
   require Logger
 
   defp base_url do
-    host = Application.get_env(:docker, :host) || System.get_env("DOCKER_HOST") |> String.replace("tcp://", "http://")
+    host = Application.get_env(:docker, :host) || System.get_env("DOCKER_HOST")
     version = Application.get_env(:docker, :version)
-    "#{host}/#{version}" |> String.rstrip(?/)
+    "#{host}/#{version}"
+    |> String.replace("tcp://", "http://")
+    |> String.rstrip(?/)
   end
 
   @default_headers %{"Content-Type" => "application/json"}
@@ -15,8 +17,8 @@ defmodule Docker.Client do
   def get(resource, headers \\ @default_headers) do
     Logger.debug "Sending GET request to the Docker HTTP API: #{resource}"
     base_url <> resource
-        |> HTTPoison.get!(headers)
-        |> decode_body
+    |> HTTPoison.get!(headers)
+    |> decode_body
   end
 
   @doc """
@@ -26,8 +28,8 @@ defmodule Docker.Client do
     Logger.debug "Sending POST request to the Docker HTTP API: #{resource}, #{inspect data}"
     data = Poison.encode! data
     base_url <> resource
-        |> HTTPoison.post!(data, headers)
-        |> decode_body
+    |> HTTPoison.post!(data, headers)
+    |> decode_body
   end
 
   @doc """
@@ -36,7 +38,7 @@ defmodule Docker.Client do
   def delete(resource, headers \\ @default_headers) do
     Logger.debug "Sending DELETE request to the Docker HTTP API: #{resource}"
     base_url <> resource
-        |> HTTPoison.delete!(headers)
+    |> HTTPoison.delete!(headers)
   end
 
   defp decode_body(%HTTPoison.Response{body: ""}) do
