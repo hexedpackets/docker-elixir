@@ -10,8 +10,8 @@ defmodule Docker.Config do
             user: "",
             working_dir: "",
             hostname: nil,
-            net: "bridge",
-            generic_hostname: false
+            generic_hostname: false,
+            host_config: %{network_mode: "bridge"}
 
   @doc """
   Given a %Docker.Config{} struct, formats and returns a dictionary of the appropiate options
@@ -36,10 +36,8 @@ defmodule Docker.Config do
       "Volumes" => map_empty_dict(conf.volumes, 1),
       "WorkingDir" => conf.working_dir,
       "ExposedPorts" => format_ports(conf.ports),
-      "NetworkDisabled" => conf.net == "none",
-      "HostConfig" => %{
-        "NetworkMode" => conf.net,
-      },
+      "NetworkDisabled" => Dict.get(conf.host_config, :network_mode) == "none",
+      "HostConfig" => format_host_config(conf.host_config),
     }
   end
 
@@ -56,7 +54,7 @@ defmodule Docker.Config do
 
     %{"Binds" => format_volumes(conf.volumes),
       "PortBindings" => port_map,
-      "NetworkMode" => conf.net,
+      "NetworkMode" => Dict.get(conf.host_config, :network_mode, "bridge"),
     }
   end
   def start_container(conf = %Docker.Config{}) do
@@ -79,6 +77,13 @@ defmodule Docker.Config do
   def format_volumes(nil), do: nil
   def format_volumes(volumes = %{}) do
     volumes |> Enum.map(&(to_string(elem(&1, 0)) <> ":" <> elem(&1, 1)))
+  end
+
+  def format_host_config(nil), do: %{}
+  def format_host_config(host_config) do
+    host_config
+    |> Enum.map(fn({key, value}) -> {titlecase(key), value} end)
+    |> Enum.into(%{})
   end
 
 
@@ -104,5 +109,13 @@ defmodule Docker.Config do
   defp map_empty_dict(nil, _), do: %{}
   defp map_empty_dict(dict, element) do
     Enum.map(dict, &({elem(&1, element), %{}})) |> Enum.into(%{})
+  end
+
+  defp titlecase(value) when is_atom(value), do: value |> to_string |> titlecase
+  defp titlecase(value) when is_binary(value), do: value |> String.split("_") |> titlecase
+  defp titlecase(words) when is_list(words) do
+    words
+    |> Enum.map(&String.capitalize/1)
+    |> Enum.join
   end
 end
