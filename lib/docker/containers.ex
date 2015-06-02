@@ -42,6 +42,15 @@ defmodule Docker.Containers do
   @doc """
   Starts a newly created container.
   """
+  def start(id) do
+    Docker.Client.post("#{@base_uri}/#{id}/start", %{})
+  end
+
+  @doc """
+  Starts a newly created container with a specified start config.
+  The start config was deprecated as of v1.15 of the API, and all
+  host parameters should be in the create configuration.
+  """
   def start(id, conf) do
     Docker.Client.post("#{@base_uri}/#{id}/start", conf)
   end
