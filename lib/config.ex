@@ -11,7 +11,7 @@ defmodule Docker.Config do
             working_dir: "",
             hostname: nil,
             generic_hostname: false,
-            host_config: %{network_mode: "bridge"}
+            host_config: %{"network_mode" => "bridge"}
 
   @doc """
   Given a %Docker.Config{} struct, formats and returns a dictionary of the appropiate options
@@ -39,7 +39,7 @@ defmodule Docker.Config do
       "Volumes" => map_empty_dict(conf.volumes, 1),
       "WorkingDir" => conf.working_dir,
       "ExposedPorts" => format_ports(conf.ports),
-      "NetworkDisabled" => Dict.get(conf.host_config, :network_mode) == "none",
+      "NetworkDisabled" => Dict.get(conf.host_config, "network_mode") == "none",
       "HostConfig" => format_host_config(conf.host_config),
     }
   end
@@ -57,7 +57,7 @@ defmodule Docker.Config do
 
     %{"Binds" => format_volumes(conf.volumes),
       "PortBindings" => port_map,
-      "NetworkMode" => Dict.get(conf.host_config, :network_mode, "bridge"),
+      "NetworkMode" => Dict.get(conf.host_config, "network_mode", "bridge"),
     }
   end
   def start_container(conf = %Docker.Config{}) do
