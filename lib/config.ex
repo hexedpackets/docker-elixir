@@ -17,6 +17,9 @@ defmodule Docker.Config do
   Given a %Docker.Config{} struct, formats and returns a dictionary of the appropiate options
   for creating a container.
   """
+  def create_container(conf = %Docker.Config{generic_hostname: nil}) do
+    %Docker.Config{conf | generic_hostname: false} |> create_container
+  end
   def create_container(conf = %Docker.Config{generic_hostname: false}) do
     {:ok, os_hostname} = :inet.gethostname
     hostname = conf.hostname || "#{conf.name}-#{os_hostname}"
