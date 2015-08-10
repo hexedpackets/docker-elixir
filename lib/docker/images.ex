@@ -28,7 +28,7 @@ defmodule Docker.Images do
   def pull(image), do: pull(image, "latest")
   def pull(image, tag) do
     "#{@base_uri}/create?fromImage=#{image}&tag=#{tag}"
-        |> Docker.Client.post
+    |> Docker.Client.post
   end
 
   @doc """
@@ -42,7 +42,7 @@ defmodule Docker.Images do
     }
 
     "#{@base_uri}/create?fromImage=#{image}&tag=#{tag}"
-        |> Docker.Client.post("", headers)
+    |> Docker.Client.post("", headers)
   end
 
   @doc """

@@ -1,7 +1,7 @@
 defmodule Docker.Mixfile do
   use Mix.Project
 
-  @version "0.3.0"
+  @version File.read!("VERSION") |> String.strip
 
   def project do
     [app: :docker,
@@ -37,6 +37,6 @@ defmodule Docker.Mixfile do
     [contributors: ["William Huba"],
      licenses: ["Apache 2.0"],
      links: %{"GitHub" => "https://github.com/hexedpackets/docker-elixir"},
-     files: ~w(mix.exs README.md LICENSE config lib)]
+     files: ~w(mix.exs README.md LICENSE VERSION config lib)]
   end
 end
