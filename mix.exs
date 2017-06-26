@@ -7,11 +7,9 @@ defmodule Docker.Mixfile do
     [app: :docker,
      version: @version,
      elixir: "~> 1.0",
-     deps: deps,
-
-     # Hex
-     description: description,
-     package: package]
+     deps: deps(),
+     description: description(),
+     package: package()]
   end
 
   def application do
@@ -20,10 +18,10 @@ defmodule Docker.Mixfile do
 
   defp deps do
     [
-      {:poison, "~> 1.2"},
-      {:httpoison, "~> 0.5"},
-      {:earmark, "~> 0.1", only: :dev},
-      {:ex_doc, "~> 0.7", only: :dev},
+      {:poison, "~> 3.0"},
+      {:httpoison, "~> 0.11"},
+      {:earmark, "~> 1.2.2", only: :dev},
+      {:ex_doc, "~> 0.14", only: :dev, runtime: false}
     ]
   end
 

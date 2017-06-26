@@ -6,6 +6,7 @@ defmodule Docker.Client do
     version = Application.get_env(:docker, :version)
     "#{host}/#{version}"
     |> String.replace("tcp://", "http://")
+    |> String.replace("unix://", "http+unix://")
     |> String.rstrip(?/)
   end
 
@@ -15,8 +16,9 @@ defmodule Docker.Client do
   Send a GET request to the Docker API at the speicifed resource.
   """
   def get(resource, headers \\ @default_headers) do
-    Logger.debug "Sending GET request to the Docker HTTP API: #{resource}"
-    base_url <> resource
+    full = base_url <> resource
+    Logger.debug "Sending GET request to the Docker HTTP API: #{full}"
+    full
     |> HTTPoison.get!(headers)
     |> decode_body
   end
