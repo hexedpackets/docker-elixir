@@ -26,6 +26,7 @@ defmodule Docker.Client do
   def post(resource, data \\ "", headers \\ @default_headers) do
     Logger.debug "Sending POST request to the Docker HTTP API: #{resource}, #{inspect data}"
     data = Poison.encode! data
+    Logger.debug data
     base_url <> resource
     |> HTTPoison.post!(data, headers)
     |> decode_body
@@ -44,11 +45,16 @@ defmodule Docker.Client do
     Logger.debug "Empty response"
     :nil
   end
-  defp decode_body(%HTTPoison.Response{body: body}) do
+  defp decode_body(%HTTPoison.Response{body: body, status_code: status_code}) do
     Logger.debug "Decoding Docker API response: #{inspect body}"
-    case Poison.decode(body) do
-      {:ok, dict} -> dict
-      {:error, _} -> body
+    with {:ok, dict} <- Poison.decode(body),
+      true <- status_code < 300 do
+        {:ok, dict}
+    else
+      {:error, body} ->
+        {:error, body}
+      _ ->
+      {:error, "Unknow errors."}
     end
   end
 end

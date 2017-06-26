@@ -12,11 +12,11 @@ defmodule ContainersTest do
 
   test "create minimal container" do
     conf = %{"AttachStdin" => false,
-      "Env" => %{},
+      "Env" => [],
       "Image" => "#{@test_image}:#{@test_image_tag}",
       "Volumes" => %{},
       "ExposedPorts" => %{},
     }
-    assert Docker.Containers.create(conf)
+    assert {:ok, _} = Docker.Containers.create(conf)
   end
 end
