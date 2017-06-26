@@ -47,14 +47,16 @@ defmodule Docker.Client do
   end
   defp decode_body(%HTTPoison.Response{body: body, status_code: status_code}) do
     Logger.debug "Decoding Docker API response: #{inspect body}"
-    with {:ok, dict} <- Poison.decode(body),
-      true <- status_code < 300 do
-        {:ok, dict}
-    else
-      {:error, body} ->
-        {:error, body}
+    case Poison.decode(body) do
+      {:ok, dict} ->
+        case status_code do
+          x when x < 400 ->
+            {:ok, dict}
+          _ ->
+            {:error, dict}
+        end
       _ ->
-      {:error, "Unknow errors."}
+        {:error, "Unknow errors."}
     end
   end
 end

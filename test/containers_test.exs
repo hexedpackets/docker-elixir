@@ -19,4 +19,17 @@ defmodule ContainersTest do
     }
     assert {:ok, _} = Docker.Containers.create(conf)
   end
+
+  test "Try to create two container with the same name" do
+    conf = %{"AttachStdin" => false,
+      "Env" => [],
+      "Image" => "#{@test_image}:#{@test_image_tag}",
+      "Volumes" => %{},
+      "ExposedPorts" => %{},
+    }
+    assert {:ok, container} = Docker.Containers.create(conf, "coco")
+    assert {:error, _} = Docker.Containers.create(conf, "coco")
+    Docker.Containers.remove(container["Id"])
+  end
+
 end
