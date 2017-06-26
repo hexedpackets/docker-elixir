@@ -2,12 +2,9 @@ defmodule Docker.Client do
   require Logger
 
   defp base_url do
-    host = Application.get_env(:docker, :host) || System.get_env("DOCKER_HOST")
+    host = Application.get_env(:docker, :host)
     version = Application.get_env(:docker, :version)
     "#{host}/#{version}"
-    |> String.replace("tcp://", "http://")
-    |> String.replace("unix://", "http+unix://")
-    |> String.rstrip(?/)
   end
 
   @default_headers %{"Content-Type" => "application/json"}
