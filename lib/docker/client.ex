@@ -41,10 +41,16 @@ defmodule Docker.Client do
     |> HTTPoison.delete!(headers)
   end
 
-  defp decode_body(%HTTPoison.Response{body: ""}) do
+  defp decode_body(%HTTPoison.Response{body: "", status_code: status_code}) do
     Logger.debug "Empty response"
-    :nil
+    case status_code do
+      x when x < 400 ->
+        {:ok}
+      _ ->
+        {:error}
+    end
   end
+
   defp decode_body(%HTTPoison.Response{body: body, status_code: status_code}) do
     Logger.debug "Decoding Docker API response: #{inspect body}"
     case Poison.decode(body) do
