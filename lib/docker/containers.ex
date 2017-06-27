@@ -23,6 +23,13 @@ defmodule Docker.Containers do
   end
 
   @doc """
+  Restart a container.
+  """
+  def restart(id) do
+    "#{@base_uri}/#{id}/restart" |> Docker.Client.post
+  end
+
+  @doc """
   Remove a container. Assumes the container is already stopped.
   """
   def remove(id) do
