@@ -18,6 +18,6 @@ defmodule ImagesTest do
   end
 
   test "inspect image" do
-    assert {:ok , image} = Docker.Images.inspect(@test_image)
+    assert {:ok , _} = Docker.Images.inspect(@test_image)
   end
 end

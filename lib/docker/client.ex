@@ -13,7 +13,7 @@ defmodule Docker.Client do
   Send a GET request to the Docker API at the speicifed resource.
   """
   def get(resource, headers \\ @default_headers) do
-    full = base_url <> resource
+    full = base_url() <> resource
     Logger.debug "Sending GET request to the Docker HTTP API: #{full}"
     full
     |> HTTPoison.get!(headers)
@@ -27,7 +27,7 @@ defmodule Docker.Client do
     Logger.debug "Sending POST request to the Docker HTTP API: #{resource}, #{inspect data}"
     data = Poison.encode! data
     Logger.debug data
-    base_url <> resource
+    base_url() <> resource
     |> HTTPoison.post!(data, headers)
     |> decode_body
   end
@@ -37,7 +37,7 @@ defmodule Docker.Client do
   """
   def delete(resource, headers \\ @default_headers) do
     Logger.debug "Sending DELETE request to the Docker HTTP API: #{resource}"
-    base_url <> resource
+    base_url() <> resource
     |> HTTPoison.delete!(headers)
   end
 
