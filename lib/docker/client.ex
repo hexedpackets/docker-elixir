@@ -16,7 +16,7 @@ defmodule Docker.Client do
     full = base_url() <> resource
     Logger.debug "Sending GET request to the Docker HTTP API: #{full}"
     full
-    |> HTTPoison.get!(headers)
+    |> HTTPoison.get!(headers, recv_timeout: :infinity)
     |> decode_body
   end
 
@@ -27,8 +27,9 @@ defmodule Docker.Client do
     Logger.debug "Sending POST request to the Docker HTTP API: #{resource}, #{inspect data}"
     data = Poison.encode! data
     Logger.debug data
+    Logger.debug("Posting #{inspect(base_url() <> resource)}")
     base_url() <> resource
-    |> HTTPoison.post!(data, headers)
+    |> HTTPoison.post!(data, headers, recv_timeout: :infinity)
     |> decode_body
   end
 
