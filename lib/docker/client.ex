@@ -26,11 +26,21 @@ defmodule Docker.Client do
   def post(resource, data \\ "", headers \\ @default_headers) do
     Logger.debug "Sending POST request to the Docker HTTP API: #{resource}, #{inspect data}"
     data = Poison.encode! data
-    Logger.debug data
     Logger.debug("Posting #{inspect(base_url() <> resource)}")
     base_url() <> resource
     |> HTTPoison.post!(data, headers, recv_timeout: :infinity)
     |> decode_body
+  end
+
+  @doc """
+  Send a POST request to the Docker API, stream the response.
+  """
+  def stream(verb, resource, data \\ "", headers \\ @default_headers) do
+    Logger.debug "Sending POST request to the Docker HTTP API: #{resource}, #{inspect data}"
+    data = Poison.encode! data
+    url = base_url() <> resource
+    Logger.debug("Posting #{inspect(url)}")
+    HTTPoison.request!(verb, url, data, headers, [recv_timeout: :infinity, stream_to: self()])
   end
 
   @doc """
