@@ -22,6 +22,8 @@ defmodule Docker.Misc do
   Monitor Docker's events as stream.
   """
   def events_stream, do: Docker.Client.stream(:get, "/events")
-  #TODO support full filter
-  def events_stream(container_id), do: Docker.Client.stream(:get, "/events?filter=container=#{container_id}")
+  def events_stream(filter) do
+    json = filter |> Poison.encode!
+    Docker.Client.stream(:get, "/events?filters=#{json}")
+  end
 end
