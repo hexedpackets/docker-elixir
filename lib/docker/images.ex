@@ -32,6 +32,16 @@ defmodule Docker.Images do
   end
 
   @doc """
+  Pull a Docker image as stream.
+  """
+  def pull_stream(image), do: pull_stream(image, "latest")
+  def pull_stream(image, tag) do
+    url = "#{@base_uri}/create?fromImage=#{image}&tag=#{tag}"
+    Docker.Client.stream(:post, url)
+  end
+
+
+  @doc """
   Pull a Docker image from the repo after authenticating.
   """
   def pull(image, tag, auth) do
