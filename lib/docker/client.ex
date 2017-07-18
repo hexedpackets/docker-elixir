@@ -17,7 +17,6 @@ defmodule Docker.Client do
     Logger.debug "Sending GET request to the Docker HTTP API: #{full}"
     full
     |> HTTPoison.get!(headers, recv_timeout: :infinity)
-    |> decode_body
   end
 
   @doc """
@@ -29,11 +28,10 @@ defmodule Docker.Client do
     Logger.debug("Posting #{inspect(base_url() <> resource)}")
     base_url() <> resource
     |> HTTPoison.post!(data, headers, recv_timeout: :infinity)
-    |> decode_body
   end
 
   @doc """
-  Send a POST request to the Docker API, stream the response.
+  Send a request with the to the Docker API, stream the response.
   """
   def stream(verb, resource, data \\ "", headers \\ @default_headers) do
     Logger.debug "Sending POST request to the Docker HTTP API: #{resource}, #{inspect data}"
@@ -50,30 +48,5 @@ defmodule Docker.Client do
     Logger.debug "Sending DELETE request to the Docker HTTP API: #{resource}"
     base_url() <> resource
     |> HTTPoison.delete!(headers)
-  end
-
-  defp decode_body(%HTTPoison.Response{body: "", status_code: status_code}) do
-    Logger.debug "Empty response"
-    case status_code do
-      x when x < 400 ->
-        {:ok}
-      _ ->
-        {:error}
-    end
-  end
-
-  defp decode_body(%HTTPoison.Response{body: body, status_code: status_code}) do
-    Logger.debug "Decoding Docker API response: #{inspect body}"
-    case Poison.decode(body) do
-      {:ok, dict} ->
-        case status_code do
-          x when x < 400 ->
-            {:ok, dict}
-          _ ->
-            {:error, dict}
-        end
-      _ ->
-        {:error, "Unknown errors"}
-    end
   end
 end
