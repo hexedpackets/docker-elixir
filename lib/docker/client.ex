@@ -31,10 +31,10 @@ defmodule Docker.Client do
   end
 
   @doc """
-  Send a request with the to the Docker API, stream the response.
+  Send a request with the verb to the Docker API, stream the response.
   """
   def stream(verb, resource, data \\ "", headers \\ @default_headers) do
-    Logger.debug "Sending POST request to the Docker HTTP API: #{resource}, #{inspect data}"
+    Logger.debug "Sending #{verb} request to the Docker HTTP API: #{resource}, #{inspect data}"
     data = Poison.encode! data
     url = base_url() <> resource
     Logger.debug("Posting #{inspect(url)}")
