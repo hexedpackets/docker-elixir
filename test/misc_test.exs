@@ -19,7 +19,7 @@ defmodule MiscTest do
       "ExposedPorts" => %{},
     }
     assert {:ok, container} = Docker.Containers.create(conf, "misc")
-    assert_receive %HTTPoison.AsyncChunk{id: id, chunk: _}, :infinity
+    assert_receive %HTTPoison.AsyncChunk{id: ^id, chunk: _}, :infinity
     Docker.Containers.remove(container["Id"])
   end
 end
