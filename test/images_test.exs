@@ -23,9 +23,9 @@ defmodule ImagesTest do
     Docker.Images.delete(@test_image)
     assert %HTTPoison.AsyncResponse{id: id} =
       Docker.Images.pull_stream(@test_image)
-    assert_receive %HTTPoison.AsyncStatus{id: id, code: 200}, :infinity
-    assert_receive %HTTPoison.AsyncHeaders{id: id, headers: _}, :infinity
-    assert_receive %HTTPoison.AsyncChunk{id: id, chunk: _}, :infinity
-    assert_receive %HTTPoison.AsyncEnd{id: id}, :infinity
+    assert_receive %HTTPoison.AsyncStatus{id: ^id, code: 200}, :infinity
+    assert_receive %HTTPoison.AsyncHeaders{id: ^id, headers: _}, :infinity
+    assert_receive %HTTPoison.AsyncChunk{id: ^id, chunk: _}, :infinity
+    assert_receive %HTTPoison.AsyncEnd{id: ^id}, :infinity
   end
 end
