@@ -82,16 +82,6 @@ defmodule Docker.Images do
     |> decode_response
   end
 
-  # defp decode_response(%HTTPoison.Response{body: "", status_code: status_code}) do
-  #   # Logger.debug "Empty response"
-  #   case status_code do
-  #     x when x < 400 ->
-  #       {:ok}
-  #     _ ->
-  #       {:error}
-  #   end
-  # end
-
   defp decode_response(%HTTPoison.Response{body: body, status_code: status_code}) do
     # Logger.debug "Decoding Docker API response: #{inspect body}"
     case Poison.decode(body) do
@@ -99,8 +89,6 @@ defmodule Docker.Images do
         case status_code do
           200 ->
             {:ok, dict}
-          # x when x < 400 ->
-          #   {:ok, dict}
           _ ->
             {:error, dict}
         end
