@@ -1,18 +1,24 @@
 defmodule Docker.Images do
+  # require Logger
+
   @base_uri "/images"
 
   @doc """
   List all Docker images.
   """
   def list do
-    "#{@base_uri}/json?all=true" |> Docker.Client.get
+    "#{@base_uri}/json?all=true" 
+    |> Docker.Client.get
+    |> decode_response
   end
 
   @doc """
   Return a filtered list of Docker images.
   """
   def list(filter) do
-    "#{@base_uri}/json?filter=#{filter}" |> Docker.Client.get
+    "#{@base_uri}/json?filter=#{filter}" 
+    |> Docker.Client.get
+    |> decode_response
   end
 
   @doc """
@@ -29,6 +35,7 @@ defmodule Docker.Images do
   def pull(image, tag) do
     "#{@base_uri}/create?fromImage=#{image}&tag=#{tag}"
     |> Docker.Client.post
+    |> decode_response
   end
 
   @doc """
@@ -60,5 +67,32 @@ defmodule Docker.Images do
   """
   def delete(image) do
     @base_uri <> "/" <> image |> Docker.Client.delete
+  end
+
+  # defp decode_response(%HTTPoison.Response{body: "", status_code: status_code}) do
+  #   # Logger.debug "Empty response"
+  #   case status_code do
+  #     x when x < 400 ->
+  #       {:ok}
+  #     _ ->
+  #       {:error}
+  #   end
+  # end
+
+  defp decode_response(%HTTPoison.Response{body: body, status_code: status_code}) do
+    # Logger.debug "Decoding Docker API response: #{inspect body}"
+    case Poison.decode(body) do
+      {:ok, dict} ->
+        case status_code do
+          200 ->
+            {:ok, dict}
+          # x when x < 400 ->
+          #   {:ok, dict}
+          _ ->
+            {:error, dict}
+        end
+      {:error, message} ->
+        {:error, message}
+    end
   end
 end
