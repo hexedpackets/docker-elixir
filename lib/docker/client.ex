@@ -73,7 +73,7 @@ defmodule Docker.Client do
             {:error, dict}
         end
       _ ->
-        {:error, "Unknow errors."}
+        {:error, "Unknown errors"}
     end
   end
 end
