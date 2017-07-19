@@ -33,17 +33,23 @@ defmodule Docker.Containers do
   Remove a container. Assumes the container is already stopped.
   """
   def remove(id) do
-    "#{@base_uri}/#{id}" |> Docker.Client.delete
+    "#{@base_uri}/#{id}" 
+    |> Docker.Client.delete
+    |> decode_response
   end
 
   @doc """
   Create a container from an existing image.
   """
   def create(conf) do
-    Docker.Client.post("#{@base_uri}/create", conf)
+    "#{@base_uri}/create"
+    |> Docker.Client.post(conf)
+    |> decode_response
   end
   def create(conf, name) do
-    Docker.Client.post("#{@base_uri}/create?name=#{name}", conf)
+    "#{@base_uri}/create?name=#{name}"
+    |> Docker.Client.post(conf)
+    |> decode_response
   end
 
   @doc """
@@ -60,5 +66,28 @@ defmodule Docker.Containers do
   """
   def start(id, conf) do
     Docker.Client.post("#{@base_uri}/#{id}/start", conf)
+  end
+
+  defp decode_response(%HTTPoison.Response{body: "", status_code: status_code}) do
+    case status_code do
+      x when x in 200..299 ->
+        {:ok}
+      _ ->
+        {:error}
+    end
+  end
+  defp decode_response(%HTTPoison.Response{body: body, status_code: status_code}) do
+    # Logger.debug "Decoding Docker API response: #{inspect body}"
+    case Poison.decode(body) do
+      {:ok, dict} ->
+        case status_code do
+          x when x in 200..299 ->
+            {:ok, dict}
+          _ ->
+            {:error, dict}
+        end
+      {:error, message} ->
+        {:error, message}
+    end
   end
 end
