@@ -9,7 +9,7 @@ defmodule Docker.Images do
   def list do
     "#{@base_uri}/json?all=true" 
     |> Docker.Client.get
-    |> decode_response
+    |> decode_list_response
   end
 
   @doc """
@@ -18,7 +18,20 @@ defmodule Docker.Images do
   def list(filter) do
     "#{@base_uri}/json?filter=#{filter}" 
     |> Docker.Client.get
-    |> decode_response
+    |> decode_list_response
+  end
+
+  defp decode_list_response(%HTTPoison.Response{body: body, status_code: status_code}) do
+    # Logger.debug "Decoding Docker API response: #{inspect body}"
+    case Poison.decode(body) do
+      {:ok, dict} ->
+        case status_code do
+          200 -> {:ok, dict}
+          500 -> {:error, "Server error"}
+        end
+      {:error, message} ->
+        {:error, message}
+    end
   end
 
   @doc """
@@ -50,10 +63,9 @@ defmodule Docker.Images do
     receive do
       %HTTPoison.AsyncStatus{id: _id, code: code} ->
         case code do
-          404 ->
-            {:error, "Repository does not exist or no read access"}
-          _ ->
-            handle_pull()
+          200 -> handle_pull()
+          404 -> {:error, "Repository does not exist or no read access"}
+          500 -> {:error, "Server error"}
         end
       %HTTPoison.AsyncHeaders{id: _id, headers: _headers} ->
         handle_pull()
@@ -70,7 +82,21 @@ defmodule Docker.Images do
   def inspect(name) do
     "#{@base_uri}/#{name}/json?all=true" 
     |> Docker.Client.get
-    |> decode_response
+    |> decode_inspect_response
+  end
+
+  defp decode_inspect_response(%HTTPoison.Response{body: body, status_code: status_code}) do
+    # Logger.debug "Decoding Docker API response: #{inspect body}"
+    case Poison.decode(body) do
+      {:ok, dict} ->
+        case status_code do
+          200 -> {:ok, dict}
+          404 -> {:error, "No such image"}
+          500 -> {:error, "Server error"}
+        end
+      {:error, message} ->
+        {:error, message}
+    end
   end
 
   @doc """
@@ -79,18 +105,18 @@ defmodule Docker.Images do
   def delete(image) do
     @base_uri <> "/" <> image 
     |> Docker.Client.delete
-    |> decode_response
+    |> decode_delete_response
   end
 
-  defp decode_response(%HTTPoison.Response{body: body, status_code: status_code}) do
+  defp decode_delete_response(%HTTPoison.Response{body: body, status_code: status_code}) do
     # Logger.debug "Decoding Docker API response: #{inspect body}"
     case Poison.decode(body) do
       {:ok, dict} ->
         case status_code do
-          200 ->
-            {:ok, dict}
-          _ ->
-            {:error, dict}
+          200 -> {:ok, dict}
+          404 -> {:error, "No such image"}
+          409 -> {:error, "Conflict"}
+          500 -> {:error, "Server error"}
         end
       {:error, message} ->
         {:error, message}
