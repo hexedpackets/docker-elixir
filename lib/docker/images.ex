@@ -77,6 +77,15 @@ defmodule Docker.Images do
   end
 
   @doc """
+  Pull a Docker image as stream. Deprecated.
+  """
+  def pull_stream(image), do: pull_stream(image, "latest")
+  def pull_stream(image, tag) do
+    url = "#{@base_uri}/create?fromImage=#{image}&tag=#{tag}"
+    Docker.Client.stream(:post, url)
+  end
+
+  @doc """
   Inspect a Docker image by name or id.
   """
   def inspect(name) do
