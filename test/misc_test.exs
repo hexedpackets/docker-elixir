@@ -1,5 +1,6 @@
 defmodule MiscTest do
   use ExUnit.Case
+  # New tests for Docker.Misc is in test/docker/misc_test.exs
 
   @test_image "busybox"
   @test_image_tag "latest"
@@ -10,6 +11,7 @@ defmodule MiscTest do
     :ok
   end
 
+  # This is the test for the legacy Docker.Misc.events_stream/0 function
   test "events stream" do
     %HTTPoison.AsyncResponse{id: id} = Docker.Misc.events_stream()
     conf = %{"AttachStdin" => false,

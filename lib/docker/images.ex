@@ -106,32 +106,32 @@ defmodule Docker.Images do
 
   defp start_pull(url) do
     %HTTPoison.AsyncResponse{id: id} = Docker.Client.stream(:post, url)
-    {id, :pulling}
+    {id, :keepalive}
   end
 
   defp start_pull(url, headers) do
     %HTTPoison.AsyncResponse{id: id} = Docker.Client.stream(:post, url, headers)
-    {id, :pulling}
+    {id, :keepalive}
   end
 
-  defp receive_pull({_id, :pulled}) do
+  defp receive_pull({_id, :kill}) do
     {:halt, nil}
   end
-  defp receive_pull({id, :pulling}) do
+  defp receive_pull({id, :keepalive}) do
     receive do
       %HTTPoison.AsyncStatus{id: ^id, code: code} ->
         case code do
-          200 -> {[{:ok, "Started pulling"}], {id, :pulling}}
-          404 -> {[{:error, "Repository does not exist or no read access"}], {id, :pulled}}
-          500 -> {[{:error, "Server error"}], {id, :pulled}}
+          200 -> {[{:ok, "Started pulling"}], {id, :keepalive}}
+          404 -> {[{:error, "Repository does not exist or no read access"}], {id, :kill}}
+          500 -> {[{:error, "Server error"}], {id, :kill}}
         end
       %HTTPoison.AsyncHeaders{id: ^id, headers: _headers} ->
-        {[], {id, :pulling}}
+        {[], {id, :keepalive}}
       %HTTPoison.AsyncChunk{id: ^id, chunk: chunk} ->
         {:ok, %{"status" => status}} = Poison.decode(chunk)
-        {[{:pulling, status}], {id, :pulling}}
+        {[{:pulling, status}], {id, :keepalive}}
       %HTTPoison.AsyncEnd{id: ^id} ->
-        {[{:end, "Finished pulling"}], {id, :pulled}}
+        {[{:end, "Finished pulling"}], {id, :kill}}
     end
   end
 

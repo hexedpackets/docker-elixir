@@ -48,7 +48,7 @@ defmodule Docker.Misc do
   def events(since), do: Docker.Client.get("/events?since=#{since}")
   
   @doc """
-  Monitor Docker's events as stream.
+  Monitor Docker's events as stream. LEGACY.
   """
   def events_stream, do: Docker.Client.stream(:get, "/events")
   def events_stream(filter) do
@@ -60,44 +60,41 @@ defmodule Docker.Misc do
   Return real-time events from server as a stream.
   """
   def stream_events do
-    %HTTPoison.AsyncResponse{id: id} = Docker.Client.stream(:get, "/events")
-
     stream = Stream.resource(
-      fn -> {id, :streaming} end,
+      fn -> start_streaming_events("/events") end,
       fn({id, status}) -> receive_events({id, status}) end,
-      fn _ -> nil end
+      fn id -> stop_streaming_events(id) end
     )
     {:ok, stream}
   end
 
   defp start_streaming_events(url) do
     %HTTPoison.AsyncResponse{id: id} = Docker.Client.stream(:get, url)
-    {id, :streaming}
+    {id, :keepalive}
   end
 
-  defp receive_events({id, :streamed}) do
+  defp receive_events({id, :kill}) do
     {:halt, id}
   end
-  defp receive_events({id, :streaming}) do
+  defp receive_events({id, :keepalive}) do
     receive do
       %HTTPoison.AsyncStatus{id: ^id, code: code} ->
         case code do
-          200 -> {[{:ok, "Started streaming events"}], {id, :streaming}}
-          400 -> {[{:error, "Bad parameter"}], {id, :streamed}}
-          500 -> {[{:error, "Server error"}], {id, :streamed}}
+          200 -> {[{:ok, "Started streaming events"}], {id, :keepalive}}
+          400 -> {[{:error, "Bad parameter"}], {id, :kill}}
+          500 -> {[{:error, "Server error"}], {id, :kill}}
         end
       %HTTPoison.AsyncHeaders{id: ^id, headers: _headers} ->
-        {[], {id, :streaming}}
+        {[], {id, :keepalive}}
       %HTTPoison.AsyncChunk{id: ^id, chunk: chunk} ->
         {:ok, event} = Poison.decode(chunk)
-        {[{:event, event}], {id, :streaming}}
+        {[{:event, event}], {id, :keepalive}}
       %HTTPoison.AsyncEnd{id: ^id} ->
-        {[{:end, "Finished streaming"}], {id, :streamed}}
+        {[{:end, "Finished streaming"}], {id, :kill}}
     end
   end
 
   defp stop_streaming_events(id) do
     :hackney.stop_async(id)
-    Logger.debug("Hey I've been called")
   end
 end
