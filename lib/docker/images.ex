@@ -101,7 +101,7 @@ defmodule Docker.Images do
       fn({id, status}) -> receive_pull({id, status}) end,
       fn _ -> nil end
     )
-    {:ok, stream}
+    stream
   end
 
   defp start_pull(url) do

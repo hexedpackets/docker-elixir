@@ -21,7 +21,7 @@ defmodule ClientTest do
       "ExposedPorts" => %{},
     }
 
-    {:ok, stream} = Docker.Misc.stream_events()
+    stream = Docker.Misc.stream_events()
     parent = self()
     spawn(fn -> 
       Enum.map(stream, fn event -> send(parent, event) end) 
