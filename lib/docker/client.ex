@@ -37,7 +37,7 @@ defmodule Docker.Client do
     Logger.debug "Sending #{verb} request to the Docker HTTP API: #{resource}, #{inspect data}"
     data = Poison.encode! data
     url = base_url() <> resource
-    Logger.debug("Posting #{inspect(url)}")
+    Logger.debug("Posting #{inspect(url)} #{inspect(headers)}")
     HTTPoison.request!(verb, url, data, headers, [recv_timeout: :infinity, stream_to: self()])
   end
 
