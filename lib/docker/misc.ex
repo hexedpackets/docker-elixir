@@ -65,7 +65,7 @@ defmodule Docker.Misc do
       fn({id, status}) -> receive_events({id, status}) end,
       fn id -> stop_streaming_events(id) end
     )
-    {:ok, stream}
+    stream
   end
 
   defp start_streaming_events(url) do
