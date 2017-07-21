@@ -128,8 +128,12 @@ defmodule Docker.Images do
       %HTTPoison.AsyncHeaders{id: ^id, headers: _headers} ->
         {[], {id, :keepalive}}
       %HTTPoison.AsyncChunk{id: ^id, chunk: chunk} ->
-        {:ok, %{"status" => status}} = Poison.decode(chunk)
-        {[{:pulling, status}], {id, :keepalive}}
+        case Poison.decode(chunk) do
+          {:ok, %{"status" => status}} ->
+            {[{:pulling, status}], {id, :keepalive}}
+          {:ok, %{"error" => error}} ->
+            {[{:error, error}], {id, :kill}}
+        end
       %HTTPoison.AsyncEnd{id: ^id} ->
         {[{:end, "Finished pulling"}], {id, :kill}}
     end
