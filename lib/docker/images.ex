@@ -1,5 +1,5 @@
 defmodule Docker.Images do
-  # require Logger
+  require Logger
 
   @base_uri "/images"
 
@@ -22,7 +22,7 @@ defmodule Docker.Images do
   end
 
   defp decode_list_response(%HTTPoison.Response{body: body, status_code: status_code}) do
-    # Logger.debug "Decoding Docker API response: #{inspect body}"
+    Logger.debug "Decoding Docker API response: #{Kernel.inspect body}"
     case Poison.decode(body) do
       {:ok, dict} ->
         case status_code do
@@ -50,7 +50,7 @@ defmodule Docker.Images do
   def pull(image, tag, auth) do
     headers = auth_headers(auth)
     url = "#{@base_uri}/create?fromImage=#{image}&tag=#{tag}"
-    %HTTPoison.AsyncResponse{id: id} = Docker.Client.stream(:post, url, headers)
+    %HTTPoison.AsyncResponse{id: id} = Docker.Client.stream(:post, url, "", headers)
     handle_pull(id)
   end
 
@@ -110,7 +110,7 @@ defmodule Docker.Images do
   end
 
   defp start_pull(url, headers) do
-    %HTTPoison.AsyncResponse{id: id} = Docker.Client.stream(:post, url, headers)
+    %HTTPoison.AsyncResponse{id: id} = Docker.Client.stream(:post, url, "", headers)
     {id, :keepalive}
   end
 
@@ -120,6 +120,7 @@ defmodule Docker.Images do
   defp receive_pull({id, :keepalive}) do
     receive do
       %HTTPoison.AsyncStatus{id: ^id, code: code} ->
+        IO.inspect code
         case code do
           200 -> {[{:ok, "Started pulling"}], {id, :keepalive}}
           404 -> {[{:error, "Repository does not exist or no read access"}], {id, :kill}}
@@ -128,6 +129,7 @@ defmodule Docker.Images do
       %HTTPoison.AsyncHeaders{id: ^id, headers: _headers} ->
         {[], {id, :keepalive}}
       %HTTPoison.AsyncChunk{id: ^id, chunk: chunk} ->
+        IO.inspect chunk
         case Poison.decode(chunk) do
           {:ok, %{"status" => status}} ->
             {[{:pulling, status}], {id, :keepalive}}
@@ -135,6 +137,7 @@ defmodule Docker.Images do
             {[{:error, error}], {id, :kill}}
         end
       %HTTPoison.AsyncEnd{id: ^id} ->
+        IO.puts "asyncEnd"
         {[{:end, "Finished pulling"}], {id, :kill}}
     end
   end
@@ -149,7 +152,7 @@ defmodule Docker.Images do
   end
 
   defp decode_inspect_response(%HTTPoison.Response{body: body, status_code: status_code}) do
-    # Logger.debug "Decoding Docker API response: #{inspect body}"
+    Logger.debug "Decoding Docker API response: #{Kernel.inspect body}"
     case Poison.decode(body) do
       {:ok, dict} ->
         case status_code do
@@ -172,7 +175,7 @@ defmodule Docker.Images do
   end
 
   defp decode_delete_response(%HTTPoison.Response{body: body, status_code: status_code}) do
-    # Logger.debug "Decoding Docker API response: #{inspect body}"
+    Logger.debug "Decoding Docker API response: #{Kernel.inspect body}"
     case Poison.decode(body) do
       {:ok, dict} ->
         case status_code do
