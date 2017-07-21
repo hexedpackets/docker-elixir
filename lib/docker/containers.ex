@@ -1,4 +1,5 @@
 defmodule Docker.Containers do
+  require Logger
   @base_uri "/containers"
 
   @doc """
@@ -11,7 +12,7 @@ defmodule Docker.Containers do
   end
 
   defp decode_list_response(%HTTPoison.Response{body: body, status_code: status_code}) do
-    # Logger.debug "Decoding Docker API response: #{inspect body}"
+    Logger.debug "Decoding Docker API response: #{Kernel.inspect body}"
     case Poison.decode(body) do
       {:ok, dict} ->
         case status_code do
@@ -33,7 +34,7 @@ defmodule Docker.Containers do
   end
 
   defp decode_inspect_response(%HTTPoison.Response{body: body, status_code: status_code}) do
-    # Logger.debug "Decoding Docker API response: #{inspect body}"
+    Logger.debug "Decoding Docker API response: #{Kernel.inspect body}"
     case Poison.decode(body) do
       {:ok, dict} ->
         case status_code do
@@ -60,7 +61,7 @@ defmodule Docker.Containers do
   end
 
   defp decode_create_response(%HTTPoison.Response{body: body, status_code: status_code}) do
-    # Logger.debug "Decoding Docker API response: #{inspect body}"
+    Logger.debug "Decoding Docker API response: #{Kernel.inspect body}"
     case Poison.decode(body) do
       {:ok, dict} ->
         case status_code do
