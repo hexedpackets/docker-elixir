@@ -1,4 +1,4 @@
-defmodule ClientTest do
+defmodule MiscTestDos do
   use ExUnit.Case
 
   test "info" do
