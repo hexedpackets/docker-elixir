@@ -90,7 +90,7 @@ defmodule Docker.Images do
       fn({id, status}) -> receive_pull({id, status}) end,
       fn _ -> nil end
     )
-    {:ok, stream}
+    stream
   end
 
   @doc """
@@ -127,6 +127,7 @@ defmodule Docker.Images do
           200 -> {[{:ok, "Started pulling"}], {id, :keepalive}}
           404 -> {[{:error, "Repository does not exist or no read access"}], {id, :kill}}
           500 -> {[{:error, "Server error"}], {id, :kill}}
+          _ -> {[{:error, "Server error"}], {id, :kill}}
         end
       %HTTPoison.AsyncHeaders{id: ^id, headers: _headers} ->
         {[], {id, :keepalive}}
