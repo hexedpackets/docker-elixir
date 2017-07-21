@@ -28,6 +28,7 @@ defmodule Docker.Images do
         case status_code do
           200 -> {:ok, dict}
           500 -> {:error, "Server error"}
+          _ -> {:error, "Server error"}
         end
       {:error, message} ->
         {:error, message}
@@ -68,6 +69,7 @@ defmodule Docker.Images do
           200 -> handle_pull(id)
           404 -> {:error, "Repository does not exist or no read access"}
           500 -> {:error, "Server error"}
+          _ -> {:error, "Server error"}
         end
       %HTTPoison.AsyncHeaders{id: ^id, headers: _headers} ->
         handle_pull(id)
@@ -159,6 +161,7 @@ defmodule Docker.Images do
           200 -> {:ok, dict}
           404 -> {:error, "No such image"}
           500 -> {:error, "Server error"}
+          _ -> {:error, "Server error"}
         end
       {:error, message} ->
         {:error, message}
@@ -183,6 +186,7 @@ defmodule Docker.Images do
           404 -> {:error, "No such image"}
           409 -> {:error, "Conflict"}
           500 -> {:error, "Server error"}
+          _ -> {:error, "Server error"}
         end
       {:error, message} ->
         {:error, message}
