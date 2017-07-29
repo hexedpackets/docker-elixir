@@ -6,7 +6,7 @@ defmodule Docker.Containers do
   List all existing containers.
   """
   def list do
-    "#{@base_uri}/json?all=true" 
+    "#{@base_uri}/json?all=true"
     |> Docker.Client.get
     |> decode_list_response
   end
@@ -19,6 +19,7 @@ defmodule Docker.Containers do
           200 -> {:ok, dict}
           400 -> {:error, "Bad parameter"}
           500 -> {:error, "Server error"}
+          code -> {:error, "Unknown code: #{code}"}
         end
       {:error, message} -> {:error, message}
     end
@@ -28,7 +29,7 @@ defmodule Docker.Containers do
   Inspect a container by ID.
   """
   def inspect(id) do
-    "#{@base_uri}/#{id}/json" 
+    "#{@base_uri}/#{id}/json"
     |> Docker.Client.get
     |> decode_inspect_response
   end
@@ -41,6 +42,7 @@ defmodule Docker.Containers do
           200 -> {:ok, dict}
           404 -> {:error, "No such container"}
           500 -> {:error, "Server error"}
+          code -> {:error, "Unknown code: #{code}"}
         end
       {:error, message} -> {:error, message}
     end
@@ -71,6 +73,7 @@ defmodule Docker.Containers do
           406 -> {:error, "Impossible to attach"}
           409 -> {:error, "Conflict"}
           500 -> {:error, "Server error"}
+          code -> {:error, "Unknown code: #{code}"}
         end
       {:error, message} -> {:error, message}
     end
@@ -80,7 +83,7 @@ defmodule Docker.Containers do
   Remove a container. Assumes the container is already stopped.
   """
   def remove(id) do
-    "#{@base_uri}/#{id}" 
+    "#{@base_uri}/#{id}"
     |> Docker.Client.delete
     |> decode_remove_response
   end
@@ -92,6 +95,7 @@ defmodule Docker.Containers do
       404 -> {:error, "No such container"}
       409 -> {:error, "Conflict"}
       500 -> {:error, "Server error"}
+      code -> {:error, "Unknown code: #{code}"}
     end
   end
 
@@ -119,6 +123,7 @@ defmodule Docker.Containers do
       304 -> {:error, "Container already started"}
       404 -> {:error, "No such container"}
       500 -> {:error, "Server error"}
+      code -> {:error, "Unknown code: #{code}"}
     end
   end
 
@@ -126,17 +131,20 @@ defmodule Docker.Containers do
   Stop a running container.
   """
   def stop(id) do
-    "#{@base_uri}/#{id}/stop" 
+    "#{@base_uri}/#{id}/stop"
     |> Docker.Client.post
     |> decode_stop_response
   end
 
-  defp decode_stop_response(%HTTPoison.Response{status_code: status_code}) do
+  defp decode_stop_response(%HTTPoison.Response{body: body, status_code: status_code}) do
+    Logger.debug "Decoding Docker API response: #{Kernel.inspect body}"
+
     case status_code do
       204 -> {:ok}
       304 -> {:error, "Container already stopped"}
       404 -> {:error, "No such container"}
       500 -> {:error, "Server error"}
+      code -> {:error, "Unknown code: #{code}"}
     end
   end
 
@@ -144,7 +152,7 @@ defmodule Docker.Containers do
   Restart a container.
   """
   def restart(id) do
-    "#{@base_uri}/#{id}/restart" 
+    "#{@base_uri}/#{id}/restart"
     |> Docker.Client.post
     |> decode_start_response # same responses as the start endpoint
   end
