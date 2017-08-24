@@ -76,7 +76,7 @@ defmodule Docker.Containers do
           409 -> {:error, "Conflict"}
           500 ->
             Logger.error(Kernel.inspect(body))
-            {:error, "Server error: #{dict.message}"}
+            {:error, "Server error: #{Kernel.inspect(body)}"}
           code ->
             Logger.error(Kernel.inspect(body))
             {:error, "Unknown code: #{code}"}
