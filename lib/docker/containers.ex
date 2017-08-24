@@ -41,7 +41,9 @@ defmodule Docker.Containers do
         case status_code do
           200 -> {:ok, dict}
           404 -> {:error, "No such container"}
-          500 -> {:error, "Server error"}
+          500 ->
+            Logger.error(Kernel.inspect(body))
+            {:error, "Server error"}
           code -> {:error, "Unknown code: #{code}"}
         end
       {:error, message} -> {:error, message}
@@ -72,8 +74,12 @@ defmodule Docker.Containers do
           404 -> {:error, "No such container"}
           406 -> {:error, "Impossible to attach"}
           409 -> {:error, "Conflict"}
-          500 -> {:error, "Server error"}
-          code -> {:error, "Unknown code: #{code}"}
+          500 ->
+            Logger.error(Kernel.inspect(body))
+            {:error, "Server error: #{dict.message}"}
+          code ->
+            Logger.error(Kernel.inspect(body))
+            {:error, "Unknown code: #{code}"}
         end
       {:error, message} -> {:error, message}
     end
