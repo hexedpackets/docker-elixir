@@ -52,6 +52,21 @@ defmodule ContainersTest do
     assert {:ok} = Docker.Containers.remove(id)
   end
 
+  test "start and kill" do
+    conf = %{"AttachStdin" => false,
+      "Env" => [],
+      "Image" => "redis:latest",
+      "Volumes" => %{},
+      "ExposedPorts" => %{},
+    }
+    Docker.Images.pull("redis", "latest")
+    assert {:ok, %{"Id" => id}} = Docker.Containers.create(conf)
+    assert {:ok} = Docker.Containers.start(id)
+    assert {:ok} = Docker.Containers.kill(id)
+    assert {:ok} = Docker.Containers.remove(id)
+  end
+
+
   test "restart" do
     conf = %{"AttachStdin" => false,
       "Env" => [],

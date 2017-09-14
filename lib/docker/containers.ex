@@ -19,6 +19,7 @@ defmodule Docker.Containers do
           200 -> {:ok, dict}
           400 -> {:error, "Bad parameter"}
           500 -> {:error, "Server error"}
+          _   -> {:error, "Unknow status"}
         end
       {:error, message} -> {:error, message}
     end
@@ -41,6 +42,7 @@ defmodule Docker.Containers do
           200 -> {:ok, dict}
           404 -> {:error, "No such container"}
           500 -> {:error, "Server error"}
+          _   -> {:error, "Unknow status"}
         end
       {:error, message} -> {:error, message}
     end
@@ -71,6 +73,7 @@ defmodule Docker.Containers do
           406 -> {:error, "Impossible to attach"}
           409 -> {:error, "Conflict"}
           500 -> {:error, "Server error"}
+          _   -> {:error, "Unknow status"}
         end
       {:error, message} -> {:error, message}
     end
@@ -92,6 +95,7 @@ defmodule Docker.Containers do
       404 -> {:error, "No such container"}
       409 -> {:error, "Conflict"}
       500 -> {:error, "Server error"}
+      _   -> {:error, "Unknow status"}
     end
   end
 
@@ -119,6 +123,7 @@ defmodule Docker.Containers do
       304 -> {:error, "Container already started"}
       404 -> {:error, "No such container"}
       500 -> {:error, "Server error"}
+      _   -> {:error, "Unknow status"}
     end
   end
 
@@ -137,6 +142,26 @@ defmodule Docker.Containers do
       304 -> {:error, "Container already stopped"}
       404 -> {:error, "No such container"}
       500 -> {:error, "Server error"}
+      _   -> {:error, "Unknow status"}
+    end
+  end
+
+  @doc """
+  Kill a running container.
+  """
+  def kill(id) do
+    "#{@base_uri}/#{id}/kill" 
+    |> Docker.Client.post
+    |> decode_kill_response
+  end
+
+  defp decode_kill_response(%HTTPoison.Response{status_code: status_code}) do
+    case status_code do
+      204 -> {:ok}
+      304 -> {:error, "Container already killed"}
+      404 -> {:error, "No such container"}
+      500 -> {:error, "Server error"}
+      _   -> {:error, "Unknow status"}
     end
   end
 
