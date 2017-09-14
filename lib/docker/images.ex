@@ -7,7 +7,7 @@ defmodule Docker.Images do
   List all Docker images.
   """
   def list do
-    "#{@base_uri}/json?all=true" 
+    "#{@base_uri}/json?all=true"
     |> Docker.Client.get
     |> decode_list_response
   end
@@ -16,7 +16,7 @@ defmodule Docker.Images do
   Return a filtered list of Docker images.
   """
   def list(filter) do
-    "#{@base_uri}/json?filter=#{filter}" 
+    "#{@base_uri}/json?filter=#{filter}"
     |> Docker.Client.get
     |> decode_list_response
   end
@@ -81,7 +81,7 @@ defmodule Docker.Images do
   end
 
   @doc """
-  Pull a Docker image and return the response in a stream. 
+  Pull a Docker image and return the response in a stream.
   """
   def stream_pull(image), do: stream_pull(image, "latest")
   def stream_pull(image, tag) do
@@ -133,11 +133,24 @@ defmodule Docker.Images do
         {[], {id, :keepalive}}
       %HTTPoison.AsyncChunk{id: ^id, chunk: chunk} ->
         IO.inspect chunk
-        case Poison.decode(chunk) do
+
+        # Handle the case of multiple chunks in one
+        last_chunk = chunk
+          |> String.split(~r/\n/)
+          |> Enum.filter(&(String.length(&1) > 0))
+          |> Enum.map(fn (r) -> Poison.decode(r) end)
+          |> List.last
+          
+        case last_chunk do
           {:ok, %{"status" => status}} ->
             {[{:pulling, status}], {id, :keepalive}}
           {:ok, %{"error" => error}} ->
             {[{:error, error}], {id, :kill}}
+          others ->
+            IO.puts "WTF ? No matching case for"
+            IO.inspect(others)
+            IO.puts("????")
+            {[{:error, "no idea"}], {id, :kill}}
         end
       %HTTPoison.AsyncEnd{id: ^id} ->
         IO.puts "asyncEnd"
@@ -149,7 +162,7 @@ defmodule Docker.Images do
   Inspect a Docker image by name or id.
   """
   def inspect(name) do
-    "#{@base_uri}/#{name}/json?all=true" 
+    "#{@base_uri}/#{name}/json?all=true"
     |> Docker.Client.get
     |> decode_inspect_response
   end
@@ -173,7 +186,7 @@ defmodule Docker.Images do
   Deletes a local image.
   """
   def delete(image) do
-    @base_uri <> "/" <> image 
+    @base_uri <> "/" <> image
     |> Docker.Client.delete
     |> decode_delete_response
   end
