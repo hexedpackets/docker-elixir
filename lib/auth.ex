@@ -1,4 +1,7 @@
 defmodule Docker.Auth do
+  @moduledoc """
+  Regroup docker auth stuffs
+  """
   @doc """
   Authenticate to a docker registry.
   """

@@ -21,7 +21,8 @@ defmodule Docker.Mixfile do
       {:poison, "~> 3.0"},
       {:httpoison, "~> 0.11"},
       {:earmark, "~> 1.2.2", only: :dev},
-      {:ex_doc, "~> 0.14", only: :dev, runtime: false}
+      {:ex_doc, "~> 0.14", only: :dev, runtime: false},
+      {:credo, "~> 0.8", only: [:dev, :test], runtime: false}
     ]
   end
 

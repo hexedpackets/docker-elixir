@@ -1,4 +1,7 @@
 defmodule Docker.Config do
+  @moduledoc """
+  Docker base config struct.
+  """
   defstruct name: nil,
             image: nil,
             command: "",
@@ -107,11 +110,17 @@ defmodule Docker.Config do
 
   defp port_protocol([port, protocol]), do: port <> "/" <> protocol
   defp port_protocol([port]), do: port <> "/tcp"
-  defp port_protocol(port), do: String.split(port, "/") |> port_protocol
+  defp port_protocol(port) do
+    port
+      |> String.split("/")
+      |> port_protocol
+  end
 
   defp map_empty_dict(nil, _), do: %{}
   defp map_empty_dict(dict, element) do
-    Enum.map(dict, &({elem(&1, element), %{}})) |> Enum.into(%{})
+    dict
+      |> Enum.map(&({elem(&1, element), %{}}))
+      |> Enum.into(%{})
   end
 
   defp titlecase(value) when is_atom(value), do: value |> to_string |> titlecase

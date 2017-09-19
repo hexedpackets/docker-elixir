@@ -1,4 +1,7 @@
 defmodule Docker.Names do
+  @moduledoc """
+  Docker name utility.
+  """
   @default_registry "index.docker.io"
 
   @doc """

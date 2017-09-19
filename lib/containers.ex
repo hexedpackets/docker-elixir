@@ -1,4 +1,7 @@
 defmodule Docker.Containers do
+  @moduledoc """
+  Docker containers methods.
+  """
   require Logger
   @base_uri "/containers"
 
@@ -12,7 +15,7 @@ defmodule Docker.Containers do
   end
 
   defp decode_list_response(%HTTPoison.Response{body: body, status_code: status_code}) do
-    Logger.debug "Decoding Docker API response: #{Kernel.inspect body}"
+    Logger.debug fn -> "Decoding Docker API response: #{Kernel.inspect body}" end
     case Poison.decode(body) do
       {:ok, dict} ->
         case status_code do
@@ -35,7 +38,7 @@ defmodule Docker.Containers do
   end
 
   defp decode_inspect_response(%HTTPoison.Response{body: body, status_code: status_code}) do
-    Logger.debug "Decoding Docker API response: #{Kernel.inspect body}"
+    Logger.debug fn -> "Decoding Docker API response: #{Kernel.inspect body}" end
     case Poison.decode(body) do
       {:ok, dict} ->
         case status_code do
@@ -65,23 +68,16 @@ defmodule Docker.Containers do
   end
 
   defp decode_create_response(%HTTPoison.Response{body: body, status_code: status_code}) do
-    Logger.debug "Decoding Docker API response: #{Kernel.inspect body}"
-    case Poison.decode(body) do
-      {:ok, dict} ->
-        case status_code do
-          201 -> {:ok, dict}
-          400 -> {:error, "Bad parameter"}
-          404 -> {:error, "No such container"}
-          406 -> {:error, "Impossible to attach"}
-          409 -> {:error, "Conflict"}
-          500 ->
-            Logger.error(Kernel.inspect(body))
-            {:error, "Server error: #{Kernel.inspect(body)}"}
-          code ->
-            Logger.error(Kernel.inspect(body))
-            {:error, "Unknown code: #{code}"}
-        end
-      {:error, message} -> {:error, message}
+    with 201 <- status_code,
+        {:ok, res} <- Poison.decode(body) do
+      {:ok, res}
+    else
+      400 -> {:error, "Bad parameter"}
+      404 -> {:error, "No such container"}
+      406 -> {:error, "Impossible to attach"}
+      409 -> {:error, "Conflict"}
+      500 -> {:error, "Server Error"}
+      unknow -> {:error, "Unknown error #{Kernel.inspect(body)}"}
     end
   end
 
@@ -143,7 +139,7 @@ defmodule Docker.Containers do
   end
 
   defp decode_stop_response(%HTTPoison.Response{body: body, status_code: status_code}) do
-    Logger.debug "Decoding Docker API response: #{Kernel.inspect body}"
+    Logger.debug fn -> "Decoding Docker API response: #{Kernel.inspect body}" end
 
     case status_code do
       204 -> {:ok}
@@ -181,4 +177,26 @@ defmodule Docker.Containers do
     |> Docker.Client.post
     |> decode_start_response # same responses as the start endpoint
   end
+
+  @doc """
+  Given the name of a container, returns any matching IDs.
+  """
+  def find_ids(name, :partial) do
+    name = name |> Docker.Names.container_safe |> Docker.Names.api
+    Docker.Containers.list
+    |> Enum.filter(&(match_partial_name(&1, name)))
+    |> Enum.map(&(&1["Id"]))
+  end
+  def find_ids(name) do
+    name = name |> Docker.Names.container_safe |> Docker.Names.api
+    Docker.Containers.list
+    |> Enum.filter(&(name in &1["Names"]))
+    |> Enum.map(&(&1["Id"]))
+  end
+
+  defp match_partial_name(container, name) do
+    container["Names"]
+    |> Enum.any?(&(&1 == name || String.starts_with?(&1, "#{name}_")))
+  end
+
 end
