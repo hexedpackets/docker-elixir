@@ -77,7 +77,7 @@ defmodule Docker.Containers do
       406 -> {:error, "Impossible to attach"}
       409 -> {:error, "Conflict"}
       500 -> {:error, "Server Error"}
-      unknow -> {:error, "Unknown error #{Kernel.inspect(body)}"}
+      _ -> {:error, "Unknown error #{Kernel.inspect(body)}"}
     end
   end
 
@@ -182,14 +182,16 @@ defmodule Docker.Containers do
   Given the name of a container, returns any matching IDs.
   """
   def find_ids(name, :partial) do
+    {:ok, containers} = Docker.Containers.list
     name = name |> Docker.Names.container_safe |> Docker.Names.api
-    Docker.Containers.list
-    |> Enum.filter(&(match_partial_name(&1, name)))
-    |> Enum.map(&(&1["Id"]))
+    containers
+      |> Enum.filter(&(match_partial_name(&1, name)))
+      |> Enum.map(&(&1["Id"]))
   end
   def find_ids(name) do
+    {:ok, containers} = Docker.Containers.list
     name = name |> Docker.Names.container_safe |> Docker.Names.api
-    Docker.Containers.list
+    containers
     |> Enum.filter(&(name in &1["Names"]))
     |> Enum.map(&(&1["Id"]))
   end
