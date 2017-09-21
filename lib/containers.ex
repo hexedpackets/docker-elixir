@@ -184,16 +184,26 @@ defmodule Docker.Containers do
   def find_ids(name, :partial) do
     {:ok, containers} = Docker.Containers.list
     name = name |> Docker.Names.container_safe |> Docker.Names.api
-    containers
-      |> Enum.filter(&(match_partial_name(&1, name)))
-      |> Enum.map(&(&1["Id"]))
+    ids =
+      containers
+        |> Enum.filter(&(match_partial_name(&1, name)))
+        |> Enum.map(&(&1["Id"]))
+    case length(ids) > 0 do
+      true -> {:ok, ids}
+      _ -> {:err, "No containers found"}
+    end
   end
   def find_ids(name) do
     {:ok, containers} = Docker.Containers.list
     name = name |> Docker.Names.container_safe |> Docker.Names.api
-    containers
-    |> Enum.filter(&(name in &1["Names"]))
-    |> Enum.map(&(&1["Id"]))
+    ids =
+      containers
+      |> Enum.filter(&(name in &1["Names"]))
+      |> Enum.map(&(&1["Id"]))
+    case length(ids) > 0 do
+      true -> {:ok, ids}
+      _ -> {:err, "No containers found"}
+    end
   end
 
   defp match_partial_name(container, name) do
