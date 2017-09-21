@@ -1,2 +1,0 @@
-defmodule Docker do
-end
