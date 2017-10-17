@@ -29,9 +29,11 @@ defmodule Docker.Misc do
         case status_code do
           200 -> {:ok, dict}
           500 -> {:error, "Server error"}
+            _ -> {:error, "Unknow error"}
         end
       {:error, message} ->
         {:error, message}
+      _ -> {:error, "Unknow error"}
     end
   end
 
@@ -92,12 +94,17 @@ defmodule Docker.Misc do
           200 -> {[{:ok, "Started streaming events"}], {id, :keepalive}}
           400 -> {[{:error, "Bad parameter"}], {id, :kill}}
           500 -> {[{:error, "Server error"}], {id, :kill}}
+            _ -> {[{:error, "Unknow error"}], {id, :kill}}
         end
       %HTTPoison.AsyncHeaders{id: ^id, headers: _headers} ->
         {[], {id, :keepalive}}
       %HTTPoison.AsyncChunk{id: ^id, chunk: chunk} ->
-        {:ok, event} = Poison.decode(chunk)
-        {[{:event, event}], {id, :keepalive}}
+        case Poison.decode(chunk) do
+          {:ok, event} ->
+            {[{:event, event}], {id, :keepalive}}
+          _ ->
+            {[], {id, :keepalive}}
+        end
       %HTTPoison.AsyncEnd{id: ^id} ->
         {[{:end, "Finished streaming"}], {id, :kill}}
     end
