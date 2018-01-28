@@ -6,10 +6,17 @@ defmodule Docker.Containers do
   @base_uri "/containers"
 
   @doc """
-  List all existing containers.
+  List all running containers.
   """
-  def list do
-    "#{@base_uri}/json?all=true"
+  def list_running do
+    list(%{all: false})
+  end
+
+  @doc """
+  List containers (all existing containers by default).
+  """
+  def list(opts \\ %{all: true}) do
+    Docker.Client.add_query_params("#{@base_uri}/json", opts)
     |> Docker.Client.get
     |> decode_list_response
   end
@@ -154,7 +161,7 @@ defmodule Docker.Containers do
   Kill a running container.
   """
   def kill(id) do
-    "#{@base_uri}/#{id}/kill" 
+    "#{@base_uri}/#{id}/kill"
     |> Docker.Client.post
     |> decode_kill_response
   end
