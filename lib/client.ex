@@ -18,7 +18,10 @@ defmodule Docker.Client do
   Converts the given params hash and add it to the url.
   """
   def add_query_params(url, params) do
-    "#{url}?#{URI.encode_query(params)}"
+    filtered_query = params
+      |> Enum.map(fn {p, v} -> {p, Poison.encode!(v)} end)
+      |> URI.encode_query
+    "#{url}?#{filtered_query}"
   end
 
   @doc """
