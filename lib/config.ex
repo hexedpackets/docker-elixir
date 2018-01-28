@@ -1,4 +1,7 @@
 defmodule Docker.Config do
+  @moduledoc """
+  Docker base config struct.
+  """
   defstruct name: nil,
             image: nil,
             command: "",
@@ -14,7 +17,7 @@ defmodule Docker.Config do
             host_config: %{"network_mode" => "bridge"}
 
   @doc """
-  Given a %Docker.Config{} struct, formats and returns a dictionary of the appropiate options
+  Given a %Docker.Config{} struct, formats and returns a map of the appropiate options
   for creating a container.
   """
   def create_container(conf = %Docker.Config{generic_hostname: nil}) do
@@ -36,28 +39,28 @@ defmodule Docker.Config do
       "Env" => format_environment(conf.environment),
       "Cmd" => conf.command |> OptionParser.split,
       "Image" => conf.image,
-      "Volumes" => map_empty_dict(conf.volumes, 1),
+      "Volumes" => map_empty_map(conf.volumes, 1),
       "WorkingDir" => conf.working_dir,
       "ExposedPorts" => format_ports(conf.ports),
-      "NetworkDisabled" => Dict.get(conf.host_config, "network_mode") == "none",
+      "NetworkDisabled" => Map.get(conf.host_config, "network_mode") == "none",
       "HostConfig" => format_host_config(conf.host_config),
     }
   end
 
   @doc """
-  Given a %Docker.Config{} struct, formats and returns a dictionary of the appropriate
+  Given a %Docker.Config{} struct, formats and returns a map of the appropriate
   options for starting a container.
   """
   def start_container(conf = %Docker.Config{ports: %{}}) do
     port_map = conf.ports
-        |> Dict.values
+        |> Map.values
         |> Enum.map(&port_to_tuple/1)
         |> Enum.map(&({elem(&1, 0), [%{"HostPort" => elem(&1, 1)}]}))
         |> Enum.into(%{})
 
     %{"Binds" => format_volumes(conf.volumes),
       "PortBindings" => port_map,
-      "NetworkMode" => Dict.get(conf.host_config, "network_mode", "bridge"),
+      "NetworkMode" => Map.get(conf.host_config, "network_mode", "bridge"),
     }
   end
   def start_container(conf = %Docker.Config{}) do
@@ -72,9 +75,9 @@ defmodule Docker.Config do
   def format_ports(nil), do: %{}
   def format_ports(ports = %{}) do
     ports
-        |> Dict.values
+        |> Map.values
         |> Enum.map(&port_to_tuple/1)
-        |> map_empty_dict(0)
+        |> map_empty_map(0)
   end
 
   def format_volumes(nil), do: nil
@@ -107,11 +110,17 @@ defmodule Docker.Config do
 
   defp port_protocol([port, protocol]), do: port <> "/" <> protocol
   defp port_protocol([port]), do: port <> "/tcp"
-  defp port_protocol(port), do: String.split(port, "/") |> port_protocol
+  defp port_protocol(port) do
+    port
+      |> String.split("/")
+      |> port_protocol
+  end
 
-  defp map_empty_dict(nil, _), do: %{}
-  defp map_empty_dict(dict, element) do
-    Enum.map(dict, &({elem(&1, element), %{}})) |> Enum.into(%{})
+  defp map_empty_map(nil, _), do: %{}
+  defp map_empty_map(dict, element) do
+    dict
+      |> Enum.map(&({elem(&1, element), %{}}))
+      |> Enum.into(%{})
   end
 
   defp titlecase(value) when is_atom(value), do: value |> to_string |> titlecase
