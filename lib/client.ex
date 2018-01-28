@@ -13,6 +13,17 @@ defmodule Docker.Client do
 
   defp default_headers, do: %{"Content-Type" => "application/json"}
 
+
+  @doc """
+  Converts the given params hash and add it to the url.
+  """
+  def add_query_params(url, params) do
+    filtered_query = params
+      |> Enum.map(fn {p, v} -> {p, Poison.encode!(v)} end)
+      |> URI.encode_query
+    "#{url}?#{filtered_query}"
+  end
+
   @doc """
   Send a GET request to the Docker API at the speicifed resource.
   """
