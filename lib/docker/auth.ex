@@ -5,7 +5,7 @@ defmodule Docker.Auth do
   Authenticate to the Docker registry.
   """
   def login(credentials = %{"email" => _email, "password" => _password, "username" => _username, "serveraddress" => _server}) do
-    data = Poison.encode!(credentials)
+    data = Jason.encode!(credentials)
     Docker.Client.post("/auth", data)
   end
 

@@ -33,7 +33,7 @@ defmodule Docker.Client do
   """
   def post(resource, data \\ "", headers \\ @default_headers) do
     Logger.debug "Sending POST request to the Docker HTTP API: #{resource}, #{inspect data}"
-    data = Poison.encode! data
+    data = Jason.encode!(data)
     base_url() <> resource
     |> HTTPoison.post!(data, headers)
     |> decode_body
@@ -54,7 +54,7 @@ defmodule Docker.Client do
   end
   defp decode_body(%HTTPoison.Response{body: body}) do
     Logger.debug "Decoding Docker API response: #{inspect body}"
-    case Poison.decode(body) do
+    case Jason.decode(body) do
       {:ok, dict} -> dict
       {:error, _} -> body
     end

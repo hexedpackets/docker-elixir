@@ -35,7 +35,7 @@ defmodule Docker.Images do
   Pull a Docker image from the repo after authenticating.
   """
   def pull(image, tag, auth) do
-    auth_header = auth |> Poison.encode! |> Base.encode64
+    auth_header = auth |> Jason.encode!() |> Base.encode64()
     headers = %{
       "X-Registry-Auth" => auth_header,
       "Content-Type" => "application/json"

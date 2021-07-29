@@ -15,12 +15,12 @@ defmodule Docker.Mixfile do
   end
 
   def application do
-    [applications: [:logger, :httpoison, :poison]]
+    [applications: [:logger, :httpoison, :jason]]
   end
 
   defp deps do
     [
-      {:poison, ">= 1.2.0"},
+      {:jason, "~> 1.2"},
       {:httpoison, ">= 1.0.0"},
       {:earmark, "~> 0.1", only: :dev},
       {:ex_doc, "~> 0.7", only: :dev},
