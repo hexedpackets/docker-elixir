@@ -6,7 +6,7 @@ defmodule Docker.Mixfile do
   def project do
     [app: :docker,
      version: @version,
-     elixir: "~> 1.3",
+     elixir: "~> 1.6",
      deps: deps(),
 
      # Hex
@@ -15,15 +15,16 @@ defmodule Docker.Mixfile do
   end
 
   def application do
-    [applications: [:logger, :httpoison, :jason]]
+    [extra_applications: [:logger]]
   end
 
   defp deps do
     [
-      {:jason, "~> 1.2"},
-      {:httpoison, ">= 1.0.0"},
-      {:earmark, "~> 0.1", only: :dev},
-      {:ex_doc, "~> 0.7", only: :dev},
+      {:jason, ">= 1.0.0"},
+      {:tesla, ">= 1.4.0"},
+      {:hackney, "~> 1.17"},
+      {:earmark, "~> 1.4", only: :dev},
+      {:ex_doc, "~> 0.25", only: :dev},
     ]
   end
 
