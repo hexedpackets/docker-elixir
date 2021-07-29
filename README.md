@@ -1,6 +1,12 @@
 # docker-elixir
+
 Elixir client for the Docker Remote API using HTTPoison.
 
-Currently the client only supports having Docker listen on a TCP port, not a Unix socket.
-This can be enabled with the flag the -H flag, e.g. `-H 127.0.0.1:2735`.
 
+## Docker endpoint
+
+By default, the client will attempt to connect to Docker on the unix socket path `/var/run/docker.sock`. This can be overridden with either an HTTP endpoint or different path by either setting the `DOCKER_HOST` environmental variable, or as a config option:
+
+```elixir
+config :docker, host: "http://localhost:2561"
+```
