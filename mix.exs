@@ -1,17 +1,17 @@
 defmodule Docker.Mixfile do
   use Mix.Project
 
-  @version File.read!("VERSION") |> String.strip
+  @version File.read!("VERSION") |> String.trim()
 
   def project do
     [app: :docker,
      version: @version,
-     elixir: "~> 1.0",
-     deps: deps,
+     elixir: "~> 1.3",
+     deps: deps(),
 
      # Hex
-     description: description,
-     package: package]
+     description: description(),
+     package: package()]
   end
 
   def application do
@@ -20,8 +20,8 @@ defmodule Docker.Mixfile do
 
   defp deps do
     [
-      {:poison, "~> 1.2"},
-      {:httpoison, "~> 0.5"},
+      {:poison, ">= 1.2.0"},
+      {:httpoison, ">= 1.0.0"},
       {:earmark, "~> 0.1", only: :dev},
       {:ex_doc, "~> 0.7", only: :dev},
     ]
@@ -29,7 +29,7 @@ defmodule Docker.Mixfile do
 
   defp description do
     """
-    Elixir client for the Docker Remote API using HTTPoison.
+    Elixir client for the Docker Remote API.
     """
   end
 

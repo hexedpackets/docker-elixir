@@ -11,7 +11,7 @@ defmodule Docker.Auth do
 
   def login(credentials) do
     credentials
-    |> Dict.put("serveraddress", @default_server)
-    |> login
+    |> Map.put("serveraddress", @default_server)
+    |> login()
   end
 end
