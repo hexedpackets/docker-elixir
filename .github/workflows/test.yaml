@@ -1,0 +1,29 @@
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - '*.*.*'
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: '23.1'
+          elixir-version: '1.12.0'
+      - uses: actions/cache@v2
+        with:
+          path: |
+            deps
+            _build
+          key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-mix-
+      - run: mix deps.get
+      - run: mix test
