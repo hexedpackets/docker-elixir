@@ -1,5 +1,7 @@
 # docker-elixir
 
+![Hex.pm](https://img.shields.io/hexpm/v/docker)
+
 Elixir client for the Docker Remote API using HTTPoison.
 
 
