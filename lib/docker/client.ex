@@ -35,7 +35,6 @@ defmodule Docker.Client do
     Logger.debug "Sending POST request to the Docker HTTP API: #{resource}, #{inspect data}"
     data = Poison.encode! data
     base_url() <> resource
-    |> tap(fn x -> x |> inspect() |> IO.puts end )
     |> HTTPoison.post!(data, headers)
     |> decode_body
   end
