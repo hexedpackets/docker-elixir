@@ -13,7 +13,9 @@ defmodule ImagesTest do
   test "list images" do
     images = Docker.Images.list()
     assert is_list(images)
-    filtered = Docker.Images.list |> Enum.filter(fn(image) -> "#{@test_image}:#{@test_image_tag}" in image["RepoTags"] end)
+    filtered = Enum.filter(images, fn image ->
+      "#{@test_image}:#{@test_image_tag}" in image["RepoTags"]
+    end)
     assert length(filtered) > 0
   end
 

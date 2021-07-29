@@ -1,62 +1,49 @@
 defmodule Docker.Client do
-  require Logger
-
-  @socket_path "http+unix://" <> URI.encode_www_form("/var/run/docker.sock")
+  @socket_path "unix:///var/run/docker.sock"
+  @default_version "v1.36"
 
   defp base_url() do
     host = Application.get_env(:docker, :host) || System.get_env("DOCKER_HOST", @socket_path)
-    endpoint =
+    version =
       case Application.get_env(:docker, :version) do
-        nil -> host
-        version -> "#{host}/#{version}"
+        nil -> @default_version
+        version -> version
       end
 
-    endpoint
-    |> String.replace("tcp://", "http://")
+
+    "#{normalize_host(host)}/#{version}"
     |> String.trim_trailing("/")
   end
 
-  @default_headers %{"Content-Type" => "application/json"}
+  defp normalize_host("tcp://" <> host), do: "http://" <> host
+  defp normalize_host("unix://" <> host), do: "http+unix://" <> URI.encode_www_form(host)
+
+  def client() do
+    middleware = [
+      {Tesla.Middleware.BaseUrl, base_url()},
+      Docker.ChunkedJson,
+    ]
+    Tesla.client(middleware, Tesla.Adapter.Hackney)
+  end
 
   @doc """
   Send a GET request to the Docker API at the speicifed resource.
   """
-  def get(resource, headers \\ @default_headers) do
-    Logger.debug "Sending GET request to the Docker HTTP API: #{resource}"
-    base_url() <> resource
-    |> HTTPoison.get!(headers)
-    |> decode_body
+  def get(resource, opts \\ []) do
+    Tesla.get!(client(), resource, opts) |> Map.get(:body)
   end
 
   @doc """
   Send a POST request to the Docker API, JSONifying the passed in data.
   """
-  def post(resource, data \\ "", headers \\ @default_headers) do
-    Logger.debug "Sending POST request to the Docker HTTP API: #{resource}, #{inspect data}"
-    data = Jason.encode!(data)
-    base_url() <> resource
-    |> HTTPoison.post!(data, headers)
-    |> decode_body
+  def post(resource, data \\ %{}, opts \\ []) do
+    Tesla.post!(client(), resource, data, opts) |> Map.get(:body)
   end
 
   @doc """
   Send a DELETE request to the Docker API.
   """
-  def delete(resource, headers \\ @default_headers) do
-    Logger.debug "Sending DELETE request to the Docker HTTP API: #{resource}"
-    base_url() <> resource
-    |> HTTPoison.delete!(headers)
-  end
-
-  defp decode_body(%HTTPoison.Response{body: ""}) do
-    Logger.debug "Empty response"
-    :nil
-  end
-  defp decode_body(%HTTPoison.Response{body: body}) do
-    Logger.debug "Decoding Docker API response: #{inspect body}"
-    case Jason.decode(body) do
-      {:ok, dict} -> dict
-      {:error, _} -> body
-    end
+  def delete(resource, opts \\ []) do
+    Tesla.delete!(client(), resource, opts)
   end
 end
